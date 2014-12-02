@@ -135,6 +135,18 @@ describe "an Active Record model which includes PgSearch" do
         ModelWithPgSearch.pg_search_scope :search_content, :against => :content
       end
 
+      it 'plucks when unscoping order' do
+        included = ModelWithPgSearch.create!(:content => 'foo')
+        results = ModelWithPgSearch.search_content('foo').unscope(:order).order('id DESC').pluck(:id)
+        expect(results).to eq([included.id])
+      end
+
+      it 'cannot pluck if order is not unscoped' do
+        expect do
+          ModelWithPgSearch.search_content('foo').pluck(:id)
+        end.to raise_error(ActiveRecord::StatementInvalid)
+      end
+
       it "returns an empty array when a blank query is passed in" do
         ModelWithPgSearch.create!(:content => 'foo')
 
